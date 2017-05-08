@@ -55,29 +55,8 @@ class Array<T> {
         this.bytesLength = this.bytesLength + this.elementSize;
     }*/
 
-    reverse(): Array< T > {
-        let i = 0;
-        let j = this.bytesLength / this.elementSize - 1;
-        /*for (i = 0; i < j; i++ , j--) {
-            if (this[i] != null) {
-                let icur = this[i];
-                if (this[j] != null) {
-                    let jcur = this[j];
-                    this[i] = jcur;
-                    this[j] = icur;
-                }// else {
-                //    this[j] = icur;
-                //    delete this[i];
-                //}
-            } //else {
-            //     if (this[j] !== null) {
-            //         let jcurr = this[j];
-            //         this[i]   = jcurr;
-            //         delete this[j];
-            //     }
-            // }
-        }*/
-
+    reverse(): Array<T> {
+        let i = 0, j = this.length - 1;
         while (i < j) {
             if (this[i] != null) {
                 let icur = this[i];
@@ -85,10 +64,19 @@ class Array<T> {
                     let jcur = this[j];
                     this[i] = jcur;
                     this[j] = icur;
+                } else {
+                    this[j] = icur;
+                    delete this[i];
+                }
+            } else {
+                if (this[j] != null) {
+                    let jcur = this[j];
+                    this[i]  = jcur;
+                    delete this[j];
                 }
             }
-            i = i + 1;
-            j = j - 1;
+            i++;
+            j--;
         }
 
         return this;
