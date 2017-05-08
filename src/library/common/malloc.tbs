@@ -291,9 +291,9 @@ function memcpy(target: *uint8, source: *uint8, length: int32): void {
     }
 
     // Optimized aligned copy
-    if (length >= 16 && (source as int32) % 4 == (target as int32) % 4) {
+    if (length >= 16 && ((source as int32) & 3) == ((target as int32) & 3)) {
       // Pick off the beginning
-      while ((target as int32) % 4 != 0) {
+      while (((target as int32) & 3) != 0) {
         *target = *source;
         target = target + 1;
         source = source + 1;
@@ -301,7 +301,7 @@ function memcpy(target: *uint8, source: *uint8, length: int32): void {
       }
 
       // Pick off the end
-      while (length % 4 != 0) {
+      while ((length & 3) != 0) {
         length = length - 1;
         *(target + length) = *(source + length);
       }

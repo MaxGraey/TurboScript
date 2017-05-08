@@ -1,11 +1,13 @@
 class Array<T> {
 
-    bytesLength: int32;
-    elementSize: int32;
+    bytesLength:  int32;
+    elementSize:  int32;
+    //capacitySize: int32;
 
     constructor(bytesLength: int32, elementSize: int32) {
-        this.bytesLength = bytesLength;
-        this.elementSize = elementSize;
+        this.bytesLength  = bytesLength;
+        this.elementSize  = elementSize;
+        //this.capacitySize = 1024;
     }
 
     operator [] (index: int32): T {
@@ -25,6 +27,71 @@ class Array<T> {
 
     get length(): int32 {
         return this.bytesLength / this.elementSize;
+    }
+
+    _get(index: int32): T {
+        let stripe = index * this.elementSize;
+        if (stripe >= 0 && stripe < this.bytesLength) {
+            return *((this as *int8 + 8 + stripe) as *T);
+        }
+        return null;
+    }
+
+    /*set length(newLength: int32): void {
+        this.bytesLength = newLength * this.elementSize;
+        if (this.bytesLength == 0) {
+            // free buffer
+        } else if (this.bytesLength > this.capacitySize) {
+            // grow size
+        }
+    }
+
+    push(value: T): int32 {
+        if (this.bytesLength + this.elementSize > this.capacitySize) {
+            // grow buffer
+        }
+        let tail = this.bytesLength;
+        *((this as *int8 + 8 + tail) as *T) = value;
+        this.bytesLength = this.bytesLength + this.elementSize;
+    }*/
+
+    reverse(): Array< T > {
+        let i = 0;
+        let j = this.bytesLength / this.elementSize - 1;
+        /*for (i = 0; i < j; i++ , j--) {
+            if (this[i] != null) {
+                let icur = this[i];
+                if (this[j] != null) {
+                    let jcur = this[j];
+                    this[i] = jcur;
+                    this[j] = icur;
+                }// else {
+                //    this[j] = icur;
+                //    delete this[i];
+                //}
+            } //else {
+            //     if (this[j] !== null) {
+            //         let jcurr = this[j];
+            //         this[i]   = jcurr;
+            //         delete this[j];
+            //     }
+            // }
+        }*/
+
+        while (i < j) {
+            if (this[i] != null) {
+                let icur = this[i];
+                if (this[j] != null) {
+                    let jcur = this[j];
+                    this[i] = jcur;
+                    this[j] = icur;
+                }
+            }
+            i = i + 1;
+            j = j - 1;
+        }
+
+        return this;
     }
 }
 

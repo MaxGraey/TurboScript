@@ -37,5 +37,4 @@ test('it should create an array', () => {
             v3: HEAPF32[(ptr + 12) >> 2]
         }
     }
-
 });
