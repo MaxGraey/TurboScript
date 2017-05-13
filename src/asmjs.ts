@@ -623,7 +623,9 @@ export class AsmJsModule {
 
                         if (value.kind == NodeKind.DOT && !value.resolvedType.symbol.node.isDeclare()) {
                             let dotTarget = value.dotTarget();
-                            if (dotTarget.symbol.kind == SymbolKind.VARIABLE_GLOBAL) {
+                            if (dotTarget.kind == NodeKind.NEW) {
+                                this.emitExpression(dotTarget, Precedence.LOWEST);
+                            }else if (dotTarget.symbol.kind == SymbolKind.VARIABLE_GLOBAL) {
                                 this.emitExpression(dotTarget, Precedence.ASSIGN, true);
                             } else {
                                 let ref = dotTarget.symbol.internalName == "this" ? "ptr" : dotTarget.symbol.internalName;
@@ -778,7 +780,7 @@ export class AsmJsModule {
 
             if (left.resolvedType.isInteger() && right.resolvedType.isInteger()) {
 
-                this.code.append("(Math_imul(");
+                this.code.append("(imul(");
                 this.code.append(leftIdentifier.left);
                 this.emitExpression(left, Precedence.LOWEST);
                 this.code.append(leftIdentifier.right);

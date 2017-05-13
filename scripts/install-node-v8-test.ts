@@ -2,19 +2,19 @@
  * Created by Nidin Vinayakan on 10/04/17.
  */
 
-interface Nightly {
+interface NodeJS {
     version: string;
     date: string;
 }
 
-const nightlyBaseUrl: string = "http://nodejs.org/download/nightly/";
+const baseUrl: string = "http://nodejs.org/download/test/";
 const request = require('request');
 const fs = require('fs-extra');
 const path = require('path');
 const exec = require('child_process').exec;
 const DOWNLOAD_NAME: string = `tmp/node-v8${getPlatform()}`;
 const NODE_PATH = "node-v8";
-let fileName: string = null;
+let fileName: string = "";
 
 //Clean old files
 if (fs.existsSync(NODE_PATH)) {
@@ -28,19 +28,19 @@ console.log("##########################################");
 console.log("#   Installing node.js with webassembly  #");
 console.log("##########################################");
 
-request.get(nightlyBaseUrl + "index.json", function (error, response, body: string) {
-    let nightlyInfo: Nightly[] = JSON.parse(body);
-    let downloadUrl = generateDownloadUrl(nightlyInfo);
+request.get(baseUrl + "index.json", function (error:Error, response:Response, body: string) {
+    let nodeJSInfo: NodeJS[] = JSON.parse(body);
+    let downloadUrl = generateDownloadUrl(nodeJSInfo);
     if (downloadUrl) {
         startDownload(downloadUrl);
     }
 });
 
-function generateDownloadUrl(nightlyInfo: Nightly[]): string {
-    //Just take the 'second' entry, assuming it is the latest 'completely uploaded'.
-    let latest: Nightly = nightlyInfo[1];
+function generateDownloadUrl(nodeJSInfo: NodeJS[]): string {
+    //Just take first entry, assuming it is the latest.
+    let latest: NodeJS = nodeJSInfo[0];
     fileName = "node-" + latest.version + getPlatform();
-    return nightlyBaseUrl + latest.version + "/" + fileName;
+    return baseUrl + latest.version + "/" + fileName;
 }
 
 function getPlatform(): string {
@@ -52,12 +52,12 @@ function getPlatform(): string {
         case "darwin":
             return "-darwin-x64.tar.xz";
         case "linux":
-            //x64 version not found on the nightly server
-            return "-linux-x86.tar.xz";
+            return "-linux-x64.tar.xz";
     }
+    return "";
 }
 
-function startDownload(url) {
+function startDownload(url:string) {
     console.log(`Downloading ${url}`);
     request
         .get(url)
@@ -80,11 +80,7 @@ function startDownload(url) {
 }
 
 function installWindows() {
-    const _7zDefaultPath = path.join(process.env.ProgramFiles, '7-Zip', '7z.exe');
-    let _7z = '7z';
-    if (fs.existsSync(_7zDefaultPath))
-        _7z = '"' + _7zDefaultPath + '"';
-    exec(`${_7z} x ${DOWNLOAD_NAME}`, (error, stdout, stderr) => {
+    exec(`7z x ${DOWNLOAD_NAME}`, (error, stdout, stderr) => {
         if (error) {
             console.error(`exec error: ${error}`);
             return;

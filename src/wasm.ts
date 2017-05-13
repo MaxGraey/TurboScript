@@ -524,6 +524,7 @@ class WasmModule {
             }
 
             if (fn.isConstructor) {
+                //this is CLASS_new function
                 this.emitInstantiator(bodyData, sectionOffset, fn.symbol.node)
             } else {
                 let child = fn.symbol.node.functionBody().firstChild;
@@ -698,7 +699,9 @@ class WasmModule {
             }
         }
 
-        else if (node.kind == NodeKind.FUNCTION) {
+        else if (node.kind == NodeKind.FUNCTION &&
+            (node.symbol.kind != SymbolKind.FUNCTION_INSTANCE ||
+            node.symbol.kind == SymbolKind.FUNCTION_INSTANCE && !node.parent.isTemplate())) {
 
             let returnType = node.functionReturnType();
             let shared = new WasmSharedOffset();
@@ -727,9 +730,12 @@ class WasmModule {
 
             // Functions without bodies are imports
             if (body == null) {
-                let moduleName = symbol.kind == SymbolKind.FUNCTION_INSTANCE ? symbol.parent().name : "global";
-                symbol.offset = this.importCount;
-                this.allocateImport(signatureIndex, moduleName, symbol.name);
+                //FIXME: dirty hack to support wasm native sqrt
+                if (symbol.name !== "sqrt32" && symbol.name !== "sqrt64") {
+                    let moduleName = symbol.kind == SymbolKind.FUNCTION_INSTANCE ? symbol.parent().name : "global";
+                    symbol.offset = this.importCount;
+                    this.allocateImport(signatureIndex, moduleName, symbol.name);
+                }
                 node = node.nextSibling;
                 return;
             } else {
@@ -958,7 +964,8 @@ class WasmModule {
             array.writeLEB128(size);
             appendOpcode(array, byteOffset, WasmOpcode.I32_ADD);
 
-        } else if (type.resolvedType.isTypedArray()) {
+        }
+        else if (type.resolvedType.isTypedArray()) {
             let elementSize = getTypedArrayElementSize(type.resolvedType.symbol.name);
             appendOpcode(array, byteOffset, WasmOpcode.GET_LOCAL);
             array.writeUnsignedLEB128(0);
@@ -970,7 +977,8 @@ class WasmModule {
             log(array, byteOffset, size, "i32 literal");
             array.writeLEB128(size);
             appendOpcode(array, byteOffset, WasmOpcode.I32_ADD);
-        } else {
+        }
+        else {
 
             // Pass the object size as the first argument
             appendOpcode(array, byteOffset, WasmOpcode.I32_CONST);
@@ -1276,7 +1284,11 @@ class WasmModule {
 
             // Write out the implicit "this" argument
             if (!symbol.node.isExternalImport() && symbol.kind == SymbolKind.FUNCTION_INSTANCE) {
-                this.emitNode(array, byteOffset, value.dotTarget());
+                let dotTarget = value.dotTarget();
+                this.emitNode(array, byteOffset, dotTarget);
+                if(dotTarget.kind == NodeKind.NEW){
+                    this.emitConstructor(array, byteOffset, dotTarget);
+                }
             }
 
             let child = value.nextSibling;
@@ -1284,10 +1296,18 @@ class WasmModule {
                 this.emitNode(array, byteOffset, child);
                 child = child.nextSibling;
             }
-            let callIndex: int32 = this.getWasmFunctionCallIndex(symbol);
-            appendOpcode(array, byteOffset, WasmOpcode.CALL);
-            log(array, byteOffset, callIndex, `call func index (${callIndex})`);
-            array.writeUnsignedLEB128(callIndex);
+            
+            //FIXME: dirty hack to support wasm native sqrt
+            if (symbol.name === "sqrt32") {
+                appendOpcode(array, byteOffset, WasmOpcode.F32_SQRT);
+            } else if (symbol.name === "sqrt64") {
+                appendOpcode(array, byteOffset, WasmOpcode.F64_SQRT);
+            } else {
+                let callIndex: int32 = this.getWasmFunctionCallIndex(symbol);
+                appendOpcode(array, byteOffset, WasmOpcode.CALL);
+                log(array, byteOffset, callIndex, `call func index (${callIndex})`);
+                array.writeUnsignedLEB128(callIndex);
+            }
         }
 
         else if (node.kind == NodeKind.NEW) {
