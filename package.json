@@ -11,18 +11,18 @@
   },
   "devDependencies": {
     "@types/debug": "^0.0.29",
-    "@types/fs-extra": "^2.1.0",
-    "@types/jest": "^19.2.2",
-    "@types/node": "^7.0.12",
-    "@types/webassembly-js-api": "^0.0.0",
+    "@types/fs-extra": "^3.0.0",
+    "@types/jest": "^19.2.3",
+    "@types/node": "^7.0.18",
+    "@types/webassembly-js-api": "^0.0.1",
     "babel-jest": "^19.0.0",
     "debug": "^2.6.3",
-    "fs-extra": "^2.1.2",
+    "fs-extra": "^3.0.1",
     "jest": "^19.0.2",
     "request": "^2.81.0",
     "ts-jest": "^19.0.9",
-    "ts-node": "^3.0.2",
-    "typescript": "^2.2.2"
+    "ts-node": "^3.0.4",
+    "typescript": "^2.3.2"
   },
   "bin": {
     "tc": "./bin/tc"
