@@ -1,6 +1,6 @@
-//var PI: float64 = 3.141592653589793;
-var SOLAR_MASS: float64 = 4.0 * PI * PI;
-var DAYS_PER_YEAR: float64 = 365.24;
+//let PI: float64 = 3.141592653589793;
+let SOLAR_MASS: float64 = 4.0 * PI * PI;
+let DAYS_PER_YEAR: float64 = 365.24;
 
 class Body {
     public x: float64;
@@ -94,18 +94,22 @@ function Sun(): Body {
 class NBodySystem {
     public bodies: Array< Body >;
     constructor(bodies: Array< Body >) {
-        var px: float64 = 0.0;
-        var py: float64 = 0.0;
-        var pz: float64 = 0.0;
-        var size: uint32 = bodies.length;
-        var i: uint32 = 0;
+        let px: float64 = 0.0;
+        let py: float64 = 0.0;
+        let pz: float64 = 0.0;
+        let size: int32 = bodies.length;
+        let i: int32 = 0;
+        let b: Body;
+        let m: float64;
 
         while (i < size) {
-            var b: Body    = bodies[i];
-            var m: float64 = b.mass;
+            b = bodies[i];
+
+            m = b.mass;
             px = px + b.vx * m;
             py = py + b.vy * m;
             pz = pz + b.vz * m;
+
             i++;
         }
         this.bodies = bodies;
@@ -113,7 +117,7 @@ class NBodySystem {
     }
 
     advance(dt: float64): void {
-        var dx: float64,
+        let dx: float64,
             dy: float64,
             dz: float64,
             ix: float64,
@@ -123,13 +127,19 @@ class NBodySystem {
             bivy: float64,
             bivz: float64,
             distance: float64,
-            mag: float64;
+            distanceSq: float64,
+            mag: float64,
+            bim: float64,
+            bjm: float64,
+            bodyim: float64;
 
-        var bodies: Array< Body > = this.bodies;
-        var size: uint32 = bodies.length;
-        var i: uint32 = 0;
+        let bodyi: Body, bodyj: Body;
+        let bodies: Array< Body > = this.bodies;
+        let size: int32 = bodies.length;
+        let i: int32 = 0, j: int32 = 0;
+
         while (i < size) {
-            var bodyi: Body = bodies[i];
+            bodyi = bodies[i];
 
             ix = bodyi.x;
             iy = bodyi.y;
@@ -139,21 +149,21 @@ class NBodySystem {
             bivy = bodyi.vy;
             bivz = bodyi.vz;
 
-            var bodyim: float64 = bodyi.mass;
-            var j: uint32 = i + 1;
+            bodyim = bodyi.mass;
+            j = i + 1;
 
             while (j < size) {
-                var bodyj: Body = bodies[j];
+                bodyj = bodies[j];
                 dx = ix - bodyj.x;
                 dy = iy - bodyj.y;
                 dz = iz - bodyj.z;
 
-                var distanceSq = dx * dx + dy * dy + dz * dz;
+                distanceSq = dx * dx + dy * dy + dz * dz;
                 distance = sqrt64(distanceSq);
                 mag = dt / (distanceSq * distance);
 
-                var bim = bodyim * mag;
-                var bjm = bodyj.mass * mag;
+                bim = bodyim * mag;
+                bjm = bodyj.mass * mag;
 
                 bivx = bivx - dx * bjm;
                 bivy = bivy - dy * bjm;
@@ -179,15 +189,17 @@ class NBodySystem {
     }
 
     energy(): float64 {
-        var dx: float64, dy: float64, dz: float64, distance: float64;
-        var ix: float64, iy: float64, iz: float64, vx: float64, vy: float64, vz: float64, bim: float64;
-        var e : float64 = 0.0;
-        var bodies: Array< Body > = this.bodies;
-        var size: uint32 = bodies.length;
-        var i: uint32 = 0;
+        let dx: float64, dy: float64, dz: float64, distance: float64;
+        let ix: float64, iy: float64, iz: float64, vx: float64, vy: float64, vz: float64, bim: float64;
+        let e : float64 = 0.0;
+        let bodies: Array< Body > = this.bodies;
+        let size: int32 = bodies.length;
+        let bodyi: Body, bodyj: Body;
+        let i: int32 = 0,
+            j: int32 = 0;
 
         while (i < size) {
-            var bodyi: Body = bodies[i];
+            bodyi = bodies[i];
 
             ix = bodyi.x;
             iy = bodyi.y;
@@ -200,10 +212,10 @@ class NBodySystem {
             bim = bodyi.mass;
 
             e = e + 0.5 * bim * (vx * vx + vy * vy + vz * vz);
-            var j: uint32 = i + 1;
+            j = i + 1;
 
             while (j < size) {
-                var bodyj: Body = bodies[j];
+                bodyj = bodies[j];
                 dx = ix - bodyj.x;
                 dy = iy - bodyj.y;
                 dz = iz - bodyj.z;
@@ -218,7 +230,7 @@ class NBodySystem {
     }
 }
 
-export function test(n: uint32): float64 {
+export function test(n: int32): float64 {
     let array = new Array< Body >(5);
 
     array[0] = Sun();
@@ -227,8 +239,8 @@ export function test(n: uint32): float64 {
     array[3] = Uranus();
     array[4] = Neptune();
 
-    var bodies: NBodySystem = new NBodySystem(array);
-    var i: uint32 = 0;
+    let bodies: NBodySystem = new NBodySystem(array);
+    let i: int32 = 0;
 
     while (i < n) {
         bodies.advance(0.01);
@@ -238,13 +250,13 @@ export function test(n: uint32): float64 {
 }
 
 /*
-var n: uint32 = 500000;
+let n: int32 = 500000;
 
 console.time('t');
-var bodies: NBodySystem = new NBodySystem(new Array< Body >(Sun(), Jupiter(), Saturn(), Uranus(), Neptune()));
+let bodies: NBodySystem = new NBodySystem(new Array< Body >(Sun(), Jupiter(), Saturn(), Uranus(), Neptune()));
 
 console.log(bodies.energy().toFixed(9));
-for (var i: uint32 = 0; i < n; i++) {
+for (let i: int32 = 0; i < n; i++) {
     bodies.advance(0.01);
 }
 console.log(bodies.energy().toFixed(9));
