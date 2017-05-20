@@ -37,6 +37,7 @@ class Body {
     }
 }
 
+
 function Jupiter(): Body {
     return new Body(
         4.84143144246472090,
@@ -91,6 +92,7 @@ function Sun(): Body {
     );
 }
 
+
 class NBodySystem {
     public bodies: Array< Body >;
     constructor(bodies: Array< Body >) {
@@ -110,7 +112,7 @@ class NBodySystem {
             py = py + b.vy * m;
             pz = pz + b.vz * m;
 
-            i++;
+            i = i + 1;
         }
         this.bodies = bodies;
         this.bodies[0].offsetMomentum(px, py, pz);
@@ -173,7 +175,7 @@ class NBodySystem {
                 bodyj.vy = bodyj.vy + dy * bim;
                 bodyj.vz = bodyj.vz + dz * bim;
 
-                j++;
+                j = j + 1;
             }
 
             bodyi.vx = bivx;
@@ -184,7 +186,7 @@ class NBodySystem {
             bodyi.y = bodyi.y + dt * bivy;
             bodyi.z = bodyi.z + dt * bivz;
 
-            i++;
+            i = i + 1;
         }
     }
 
@@ -222,13 +224,14 @@ class NBodySystem {
 
                 distance = sqrt64(dx * dx + dy * dy + dz * dz);
                 e = e - bim * bodyj.mass / distance;
-                j++;
+                j = j + 1;
             }
-            i++;
+            i = i + 1;
         }
         return e;
     }
 }
+
 
 export function test(n: int32): float64 {
     let array = new Array< Body >(5);
@@ -244,7 +247,7 @@ export function test(n: int32): float64 {
 
     while (i < n) {
         bodies.advance(0.01);
-        i++;
+        i = i + 1;
     }
     return bodies.energy();
 }
